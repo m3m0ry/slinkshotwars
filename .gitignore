@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/slinkshotwars
+slinkshotwars.so
+slinkshotwars.dylib
+slinkshotwars.dll
+slinkshotwars.a
+slinkshotwars.lib
+slinkshotwars-test-*
+*.exe
+*.o
+*.obj
+*.lst
