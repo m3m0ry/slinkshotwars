@@ -22,11 +22,13 @@ class Game {
         return new Game([], [], 0.0);
     }
 
+    /// Initialize a game randomly
     static Game randomInitialization(real dt)
     {
         return new Game(generate!(Particle.randomInitialization)().take(20).array, [], dt);
     }
 
+    /// One step forward in simulation
     void step()
     {
         /*
@@ -45,8 +47,12 @@ class Game {
         planets = planets.collision;
     }
 
+    /// All Particles with mass != 0
     DList!Particle planets;
+    /// All Particles with mass == 0
     DList!Particle asteroids;
+    /// Players
     Player player;
+    /// time step
     real dt;
 }
