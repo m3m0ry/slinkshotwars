@@ -1,53 +1,102 @@
 module simulation;
 
+import std.range;
+import std.math;
+import std.stdio;
+import std.container;
+import std.algorithm;
+import std.typecons;
 import mir.combinatorics;
+
 import data;
 
-/// Gravitation force between two particles
+/// Acceleration due to gravity between two particles
 Vector gravity(Particle p1, Particle p2)
 {
     Vector r = p2.x - p1.x;
-    real dist = r.length;
-    real f = G * (p1.m * p2.m / dist^^2);
-    return f * r/dist;
+    auto dist = r.length;
+    if (dist <= 0)
+        return Vector();
+    auto a = G * (p2.m / dist ^^ 2);
+    return a * r / dist;
 }
 
-/// Compute gravitation force for all particles
-void force(Particle[] particles)
+/// Computes acceleration of one particle with regard to others
+ref Particle acceleration(Range)(ref Particle particle, Range particles)
+        if (isInputRange!Range && is(ElementType!Range == Particle))
 {
-    foreach(ref p; particles)
-    {
-        p.f = 0;
-    }
-    foreach(comb; particles.combinations(2))
-    {
-        auto f = gravity(comb[0], comb[1]);
-        comb[0].f += f;
-        comb[1].f -= f;
-    }
+    particles.each!(p => particle.a += gravity(particle, p));
+    return particle;
 }
 
-/// Compute velocity
-void velocity(Particle[] particles, real dt)
+/// Compute acceleration for all particles
+Range acceleration(Range)(Range particles)
+        if (isInputRange!Range && is(ElementType!Range == Particle))
 {
-    foreach(ref p; particles)
-    {
-        p.v += p.a * dt;
-    }
+    particles.each!((ref p) => p.a = 0);
+    particles.each!((ref p) => acceleration(p, particles));
+    return particles;
+}
+
+/// Compute acceleration for all particles with regard to other particles
+Range acceleration(Range, Source)(Range particles, Source others)
+        if (isInputRange!Range && isInputRange!Source
+            && is(ElementType!Range == Particle) && is(ElementType!Source == Particle))
+{
+    particles.each!((ref p) => p.a = 0);
+    particles.each!((ref p) => acceleration(p, others));
+    return particles;
+}
+
+/// Update velocity
+Range velocity(Range)(Range particles, real dt)
+        if (isInputRange!Range && is(ElementType!Range == Particle))
+{
+    particles.each!((ref p) => p.v += p.a * dt);
+    return particles;
 }
 
 /// Update positions
-void position(Particle[] particles, real dt)
+Range position(Range)(Range particles, real dt)
+        if (isInputRange!Range && is(ElementType!Range == Particle))
 {
-    foreach(ref p; particles)
-    {
-        p.x += p.v * dt;
-    }
+    particles.each!((ref p) => p.x += p.v * dt);
+    return particles;
 }
 
-void step(Particle[] particles, real dt)
+/// Test if two particles collide
+bool collision(Particle p1, Particle p2)
 {
-    force(particles);
-    velocity(particles, dt);
-    position(particles, dt);
+    if (p1 != p2) return distance(p1, p2) <= p1.r + p2.r;
+    else return false;
+}
+
+
+void collide(ref Particle p1, const ref Particle p2)
+{
+    p1.v = (p1.m * p1.v + p2.m * p2.v) / (p1.m * p2.m);
+    p1.m += p2.m;
+    p1.r = sqrt(p1.r ^^ 2 + p2.r ^^ 2);
+}
+
+DList!Particle collision(DList!Particle particles)
+{
+    DList!Particle ignore;
+    DList!Particle remaining;
+    foreach(p; particles)
+    {
+        if(!ignore[].canFind(p))
+        {
+            foreach(o; particles)
+            {
+                if(!ignore[].canFind(o) && collision(p,o))
+                {
+                    collide(p, o);
+                    ignore.insert(o);
+                }
+            }
+            remaining.insert(p);
+        }
+    }
+    return remaining;
 }

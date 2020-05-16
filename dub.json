@@ -4,8 +4,8 @@
 	],
 	"copyright": "Copyright © 2020, Jan Hoenig",
 	"dependencies": {
-		"mir": "~>3.2.0",
-		"raylib-d": "~>2.5.0"
+		"mir": "*",
+		"raylib-d": ">=3.0.0"
 	},
 	"description": "Game with gravity and spaceships",
 	"libs": [

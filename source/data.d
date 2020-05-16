@@ -27,11 +27,6 @@ struct Vector{
         y = i;
     }
     
-    //void opAssign(Vector rhs)
-    //{
-    //    x = rhs.x;
-    //    y = rhs.y;
-    //}
     void opAssign(T)(T i) if (isNumeric!T)
     {
         x = i;
@@ -69,6 +64,7 @@ struct Vector{
         return mixin("Vector(rhs" ~ op ~ "x, rhs" ~ op ~ "y)");
     }
 
+    /// Vector length
     real length() const
     {
         return sqrt(dot(this, this));
@@ -76,19 +72,25 @@ struct Vector{
 }
 
 /// Dot product
-real dot(Vector p1, Vector p2)
+real dot(const ref Vector p1, const ref Vector p2)
 {
     auto r =  p1*p2;
     return r.x + r.y;
 }
 
-/// Computes the distance between two particles
-real distance(Vector p1, Vector p2)
+/// Computes the distance between two vectors
+real distance(const ref Vector p1, const ref Vector p2)
 {
     Vector r = p1 - p2;
-    r = r*r;
-    return sqrt(r.x + r.y);
+    return r.length;
 }
+
+/// Computes the distance between two particles
+real distance(const ref Particle p1, const ref Particle p2)
+{
+    return distance(p1.x, p2.x);
+}
+
 
 /// Particle struct
 struct Particle{
@@ -96,15 +98,10 @@ struct Particle{
     Vector x;
     /// Velocity
     Vector v;
-    /// Force
-    Vector f;
+    /// Acceleration
+    Vector a;
     /// Mass
     real m;
     /// Radius
     real r;
-
-    Vector a()
-    {
-        return f/m;
-    }
 }
