@@ -2,6 +2,7 @@ module game;
 
 import std.container;
 import std.stdio;
+import std.range;
 
 import data;
 import simulation;
@@ -21,9 +22,9 @@ class Game {
         return new Game([], [], 0.0);
     }
 
-    static Game randomInitialization()
+    static Game randomInitialization(real dt)
     {
-        return new Game([], [], 0.0);
+        return new Game(generate!(Particle.randomInitialization)().take(20).array, [], dt);
     }
 
     void step()
@@ -38,7 +39,7 @@ class Game {
             d) asteroids - player -> player takes dmg, asteroid vanishes?
         */
         asteroids[].acceleration;
-        planets[].acceleration.velocity(dt).position(dt);
+        planets[].acceleration.velocity(dt).position(dt).boundary;
         asteroids[].velocity(dt).position(dt);
 
         planets = planets.collision;

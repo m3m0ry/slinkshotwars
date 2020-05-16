@@ -5,12 +5,14 @@ import std.math;
 import std.algorithm;
 import std.typecons;
 import std.traits;
+import std.random;
 
 /// Newtonian constant of gravitation
 enum real G = 6.6743015E-11;
 
 /// 2D Vector
-struct Vector{
+struct Vector
+{
     /// X-Coordinate
     real x = 0;
     /// Y-Coordinate
@@ -21,12 +23,13 @@ struct Vector{
         x = i;
         y = j;
     }
+
     this(T)(T i) if (isNumeric!T)
     {
         x = i;
         y = i;
     }
-    
+
     void opAssign(T)(T i) if (isNumeric!T)
     {
         x = i;
@@ -35,29 +38,30 @@ struct Vector{
 
     void opOpAssign(string op, T)(T rhs) if (isNumeric!T)
     {
-        mixin("x" ~op~ "= rhs;");
-        mixin("y" ~op~ "= rhs;");
+        mixin("x" ~ op ~ "= rhs;");
+        mixin("y" ~ op ~ "= rhs;");
     }
+
     void opOpAssign(string op)(Vector rhs)
     {
-        mixin("x" ~op~ "= rhs.x;");
-        mixin("y" ~op~ "= rhs.y;");
+        mixin("x" ~ op ~ "= rhs.x;");
+        mixin("y" ~ op ~ "= rhs.y;");
     }
 
     Vector opUnary(string op)() const
     {
-        return mixin("Vector(" ~op~ " x," ~op~ "y)");
+        return mixin("Vector(" ~ op ~ " x," ~ op ~ "y)");
     }
 
     Vector opBinary(string op, T)(T rhs) const if (isNumeric!T)
     {
         return mixin("Vector(x" ~ op ~ "rhs, y" ~ op ~ "rhs)");
     }
+
     Vector opBinary(string op)(Vector rhs) const
     {
         return mixin("Vector(x" ~ op ~ "rhs.x, y" ~ op ~ "rhs.y)");
     }
-
 
     Vector opBinaryRight(string op, T)(T rhs) const if (isNumeric!T)
     {
@@ -74,7 +78,7 @@ struct Vector{
 /// Dot product
 real dot(const ref Vector p1, const ref Vector p2)
 {
-    auto r =  p1*p2;
+    auto r = p1 * p2;
     return r.x + r.y;
 }
 
@@ -91,9 +95,9 @@ real distance(const ref Particle p1, const ref Particle p2)
     return distance(p1.x, p2.x);
 }
 
-
 /// Particle struct
-struct Particle{
+struct Particle
+{
     /// Position
     Vector x;
     /// Velocity
@@ -104,4 +108,11 @@ struct Particle{
     real m;
     /// Radius
     real r;
+    /// Random Particle
+    static Particle randomInitialization()
+    {
+        alias u = uniform!("()", real, real);
+        return Particle(Vector(u(-1., 1.), u(-1., 1.)), Vector(u(-1.0, 1.0), u(-1.0, 1.0)),
+                Vector(0, 0), u(1.0, 10.0 ^^ 9), u(0.005, 0.05));
+    }
 }

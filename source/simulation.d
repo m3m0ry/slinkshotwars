@@ -64,22 +64,42 @@ Range position(Range)(Range particles, real dt)
     return particles;
 }
 
+/// Apply boundary to single particle
+ref Particle boundary(ref Particle p)
+{
+    if (p.x.x < -1) p.x.x += 2;
+    if (p.x.y < -1) p.x.y += 2;
+    if (p.x.x > 1) p.x.x -= 2;
+    if (p.x.y > 1) p.x.y -= 2;
+    return p;
+}
+
+/// Apply boundary to particles
+Range boundary(Range)(Range particles)
+        if (isInputRange!Range && is(ElementType!Range == Particle))
+{
+    particles.each!((ref p) => boundary(p));
+    return particles;
+}
+
 /// Test if two particles collide
-bool collision(Particle p1, Particle p2)
+bool collision(const ref Particle p1, const ref Particle p2)
 {
     if (p1 != p2) return distance(p1, p2) <= p1.r + p2.r;
     else return false;
 }
 
 
+/// Particle p1 devours Particle p2
 void collide(ref Particle p1, const ref Particle p2)
 {
-    p1.v = (p1.m * p1.v + p2.m * p2.v) / (p1.m * p2.m);
+    p1.v = (p1.m * p1.v + p2.m * p2.v) / (p1.m + p2.m);
     p1.m += p2.m;
     p1.r = sqrt(p1.r ^^ 2 + p2.r ^^ 2);
 }
 
-DList!Particle collision(DList!Particle particles)
+/// Resolve collisions of planets
+DList!Particle collision(ref DList!Particle particles)
 {
     DList!Particle ignore;
     DList!Particle remaining;
